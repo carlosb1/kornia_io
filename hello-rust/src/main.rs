@@ -1,17 +1,19 @@
-
 mod cv {
-    use std::path::Path;
     use image::GenericImageView;
+    use std::path::Path;
 
-    #[derive(Debug)]
-    pub struct Tensor<'a> {
+    #[derive(Debug, Clone)]
+    pub struct Tensor {
         pub shape: Vec<usize>,
-        pub data: &'a Vec<u8>,
+        pub data: Vec<u8>,
     }
 
     impl Tensor {
-        pub fn new(shape: Vec<usize>, data: &Vec<u8>) -> Tensor {
-            Tensor{shape: shape, data: data}
+        pub fn new(shape: Vec<usize>, data: Vec<u8>) -> Tensor {
+            Tensor {
+                shape: shape,
+                data: data,
+            }
         }
 
         pub fn dims(&self) -> usize {
@@ -25,16 +27,15 @@ mod cv {
             self.data[i + j + k + i3]
         }
 
-        pub fn clone(&self) -> Tensor {
-            Tensor {shape: self.shape.clone(), data: &self.data.clone() }
-        }
-
         pub fn add(&self, other: Tensor) -> Tensor {
             let mut data: Vec<u8> = self.data.clone();
             for i in 0..data.len() {
                 data[i] += other.data[i];
             }
-            Tensor { shape: self.shape.clone(), data: &data }
+            Tensor {
+                shape: self.shape.clone(),
+                data: data,
+            }
         }
 
         pub fn mul(&self, other: Tensor) -> Tensor {
@@ -42,7 +43,10 @@ mod cv {
             for i in 0..data.len() {
                 data[i] *= other.data[i];
             }
-            Tensor { shape: self.shape.clone(), data: &data }
+            Tensor {
+                shape: self.shape.clone(),
+                data: data,
+            }
         }
 
         pub fn subs(&self, other: Tensor) -> Tensor {
@@ -50,7 +54,10 @@ mod cv {
             for i in 0..data.len() {
                 data[i] -= other.data[i];
             }
-            Tensor { shape: self.shape.clone(), data: &data }
+            Tensor {
+                shape: self.shape.clone(),
+                data: data,
+            }
         }
 
         pub fn div(&self, other: Tensor) -> Tensor {
@@ -58,14 +65,20 @@ mod cv {
             for i in 0..data.len() {
                 data[i] /= other.data[i];
             }
-            Tensor { shape: self.shape.clone(), data: &data }
+            Tensor {
+                shape: self.shape.clone(),
+                data: data,
+            }
         }
 
         pub fn from_file(file_path: &str) -> Tensor {
             let img: image::DynamicImage = image::open(&Path::new(file_path)).unwrap();
             let new_shape = Vec::from([1, 3, img.height() as usize, img.width() as usize]);
             let new_data: Vec<u8> = img.to_rgb8().to_vec();
-            Tensor { shape: new_shape, data: &new_data }
+            Tensor {
+                shape: new_shape,
+                data: new_data,
+            }
         }
 
         pub fn print(&self) -> () {
@@ -88,24 +101,23 @@ mod cv {
         for x in data {
             acc += x;
         }
-        return acc
-    } 
+        return acc;
+    }
 
     pub fn cumprod(data: &Vec<usize>) -> usize {
         let mut acc: usize = 1;
         for x in data {
             acc *= x;
         }
-        return acc
-    } 
-
+        return acc;
+    }
 }
 
 fn main() {
     println!("Hello, world!");
     let shape: Vec<usize> = vec![1, 1, 2, 2];
-    let data: Vec<u8> = (0 .. cv::cumprod(&shape)).map(|x| x as u8).collect();
-    let t1 = cv::Tensor::new(shape, &data);
+    let data: Vec<u8> = (0..cv::cumprod(&shape)).map(|x| x as u8).collect();
+    let t1 = cv::Tensor::new(shape, data);
     println!("{:?}", t1);
     println!("The tensor has {} dimensions.", t1.dims());
 
