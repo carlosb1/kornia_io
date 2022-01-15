@@ -9,7 +9,7 @@ pub mod cv {
     }
 
     impl Tensor {
-        pub fn new(shape: Vec<usize>, data: Vec<u8>) -> Tensor {
+        pub fn new(shape: Vec<usize>, data: Vec<u8>) -> Self {
             Tensor {
                 shape: shape,
                 data: data,
@@ -26,7 +26,6 @@ pub mod cv {
             let k = i2 * self.shape[3];
             self.data[i + j + k + i3]
         }
-
         pub fn add(&self, other: Tensor) -> Tensor {
             let mut data: Vec<u8> = self.data.clone();
             for i in 0..data.len() {
@@ -112,6 +111,38 @@ pub mod cv {
         return acc;
     }
 }
+
+use pyo3::prelude::*;
+
+#[pymodule]
+pub fn kornia_io(py: Python, m: &PyModule) -> PyResult<()> {
+    println!("hello world");
+    Ok(())
+}
+
+/*
+#[pyclass]
+#[derive(Clone)]
+pub struct WrapperTensor {
+    _in: cv::Tensor,
+}
+//TODO Add work via reference
+#[pymethods]
+impl WrapperTensor {
+    #[new]
+    fn new(shape: Vec<usize>, data: Vec<u8>) -> Self {
+        WrapperTensor {
+            _in: cv::Tensor::new(shape, data),
+        }
+    }
+
+    fn add(&self, other: WrapperTensor) -> PyResult<WrapperTensor> {
+        Ok(WrapperTensor {
+            _in: self._in.add(other._in),
+        })
+    }
+}
+*/
 
 #[cfg(test)]
 mod tests {
