@@ -2,7 +2,7 @@ mod cv {
     use image::GenericImageView;
     use std::path::Path;
 
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, PartialEq)]
     pub struct Tensor {
         pub shape: Vec<usize>,
         pub data: Vec<u8>,
@@ -124,8 +124,8 @@ mod tests {
         let t1 = cv::Tensor::new(shape.clone(), data);
         let t2 = t1.clone();
         let t3 = t1.add(t2.clone());
-        assert_eq!(t3.data, vec![0, 2, 4, 6], "Fail add operation!");
-        assert_eq!(t3.shape, shape, "Fail add operation!");
+        let to_compare = cv::Tensor::new(shape.clone(), vec![0, 2, 4, 6]);
+        assert_eq!(t3, to_compare);
     }
 }
 
