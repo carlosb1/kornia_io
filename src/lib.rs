@@ -1,6 +1,5 @@
 use pyo3::prelude::*;
 use image::*;
-use std::path::Path;
 
 #[pyfunction]
 fn my_fcn() -> () {
@@ -9,8 +8,8 @@ fn my_fcn() -> () {
 
 #[pyfunction]
 fn read_image(file_path: String) -> (Vec<u8>, Vec<usize>) {
-    let img: image::DynamicImage = image::open(Path::new(&file_path)).unwrap();
-    let new_shape: Vec<usize> = Vec::from([1, 3, img.height() as usize, img.width() as usize]);
+    let img: image::DynamicImage = image::open(file_path).unwrap();
+    let new_shape: Vec<usize> = Vec::from([img.height() as usize, img.width() as usize, 3]);
     let new_data: Vec<u8> = img.to_rgb8().to_vec();
     (new_data, new_shape)
 }
