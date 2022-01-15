@@ -4,11 +4,16 @@ from typing import List, Tuple, Union
 import cv2
 import numpy as np
 
+import torch
 from torch import Tensor
 import kornia as K
+import kornia_rust as KR
 
 # TODO: make it flexible
-__image_reader__ = cv2.imread
+#__image_reader__ = cv2.imread
+def __image_reader__(file_path) -> Tensor:
+    data, shape = KR.read_image(file_path)
+    return Tensor(data, dtype=torch.uint8).reshape(shape)
 
 
 class ImageColor(Enum):
@@ -77,8 +82,9 @@ class Image(Tensor):
 
     @classmethod
     def from_file(cls, file_path: str) -> 'Image':
-        data: np.ndarray = __image_reader__(file_path)
-        data_t: Tensor = K.utils.image_to_tensor(data)
+        #data: np.ndarray = __image_reader__(file_path)
+        #data_t: Tensor = K.utils.image_to_tensor(data)
+        data_t: Tensor = __image_reader__(file_path)
         data_t = K.color.bgr_to_rgb(data_t)
         # TODO: discuss whether we return normalised
         data_t = data_t.float() / 255.

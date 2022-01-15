@@ -1,8 +1,8 @@
-use kornia_io::cv;
+//use kornia_io::cv;
 
 fn main() {
     println!("Hello, world!");
-    let shape: Vec<usize> = vec![1, 1, 2, 2];
+    /*let shape: Vec<usize> = vec![1, 1, 2, 2];
     let data: Vec<u8> = (0..cv::cumprod(&shape)).map(|x| x as u8).collect();
     let t1 = cv::Tensor::new(shape, data);
     println!("{:?}", t1);
@@ -34,5 +34,5 @@ fn main() {
     let img = cv::Tensor::from_file("/home/edgar/Downloads/g279.png");
     println!("{:?}", img);
 
-    println!("Goodbye, world!");
+    println!("Goodbye, world!");*/
 }

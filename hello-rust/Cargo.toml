@@ -11,10 +11,10 @@ pyo3 = { version = "0.15.1", features = ["extension-module"] }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
-name = "kornia_io"
+name = "kornia_rust"
 crate-type = ["cdylib", "lib"]
 path = "src/lib.rs"
 
 [[bin]]
-name = "kornia_io"
+name = "kornia_app"
 path = "src/main.rs"
