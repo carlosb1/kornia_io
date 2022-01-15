@@ -113,6 +113,22 @@ mod cv {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use crate::cv;
+
+    #[test]
+    fn add() {
+        let shape: Vec<usize> = vec![1, 1, 2, 2];
+        let data: Vec<u8> = (0..cv::cumprod(&shape)).map(|x| x as u8).collect();
+        let t1 = cv::Tensor::new(shape.clone(), data);
+        let t2 = t1.clone();
+        let t3 = t1.add(t2.clone());
+        assert_eq!(t3.data, vec![0, 2, 4, 6], "Fail add operation!");
+        assert_eq!(t3.shape, shape, "Fail add operation!");
+    }
+}
+
 fn main() {
     println!("Hello, world!");
     let shape: Vec<usize> = vec![1, 1, 2, 2];
@@ -131,7 +147,6 @@ fn main() {
     println!("Sum");
     let t3 = t1.add(t2.clone());
     t3.print();
-
     println!("Mul");
     let t4 = t1.mul(t2.clone());
     t4.print();
