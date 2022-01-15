@@ -1,9 +1,20 @@
 [package]
-name = "hello-rust"
+name = "kornia_io"
 version = "0.1.0"
-edition = "2021"
+edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 image = "0.23.14"
+pyo3 = { version = "0.15.1", features = ["extension-module"] }
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "kornia_io"
+crate-type = ["cdylib", "lib"]
+path = "src/lib.rs"
+
+[[bin]]
+name = "kornia_io"
+path = "src/main.rs"
