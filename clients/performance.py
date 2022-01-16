@@ -8,8 +8,8 @@ import cv2
 
 def test1_io():
     resolved_path: Path = Path(__file__).parent.resolve() / "test.jpg"
-    start = time.perf_counter()
     print(resolved_path)
+    start = time.perf_counter()
     data, shape = kornia_rs.read_image(str(resolved_path))
     end = time.perf_counter()
     start_2 = time.perf_counter()
@@ -17,7 +17,7 @@ def test1_io():
     end_2 = time.perf_counter()
     print(
         f'rust: path: {resolved_path} read time: {end-start} secs, '
-        f'set up tensor time {end_2 - start_2} secs'
+        f'set up tensor time {end_2 - start_2} secs, '
         f'shape: {img_t.shape}')
 
 
