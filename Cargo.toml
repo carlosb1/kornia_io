@@ -11,6 +11,7 @@ pyo3 = { version = "0.15.1", features = ["extension-module"] }
 
 [dev-dependencies]
 criterion = "0.3"
+pprof = { version = "0.3", features = ["flamegraph"] }
 
 
 [[bench]]
