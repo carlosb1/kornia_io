@@ -1,19 +1,13 @@
 from enum import Enum
 from typing import List, Tuple, Union
 
-import cv2
 import numpy as np
 
 import torch
 from torch import Tensor
-import kornia as K
-import kornia_rust as KR
 
-# TODO: make it flexible
-#__image_reader__ = cv2.imread
-def __image_reader__(file_path) -> Tensor:
-    data, shape = KR.read_image(file_path)
-    return Tensor(data, dtype=torch.uint8).reshape(shape)
+import kornia as K
+import kornia_rs
 
 
 class ImageColor(Enum):
@@ -153,7 +147,7 @@ class Image(Tensor):
 
 ## READING API
 
-def read_image(file_path: str) -> Image:
-    data: np.ndarray = __image_reader__(file_path)
-    image = Image.from_numpy(data, ImageColor.BGR)
-    return image.convert_(ImageColor.RGB)
+# TODO: implement Image class here
+def read_image(file_path: str) -> Tensor:
+    data, shape = kornia_rs.read_image(file_path)
+    return torch.tensor(data, dtype=torch.uint8).reshape(shape)

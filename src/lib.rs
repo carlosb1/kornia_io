@@ -15,7 +15,7 @@ fn read_image(file_path: String) -> (Vec<u8>, Vec<usize>) {
 }
 
 #[pymodule]
-pub fn kornia_rust(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn kornia_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(my_fcn, m)?)?;
     m.add_function(wrap_pyfunction!(read_image, m)?)?;
     Ok(())
