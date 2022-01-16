@@ -1,0 +1,24 @@
+name: all
+
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the main branch
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout workspace
+        uses: actions/checkout@v2
+      - name: Build Docker
+        run: ./build_devel.sh
+      - name: Start devel
+        run: ./devel.sh 
+      - name: Build
+        run: python setup.py develop
