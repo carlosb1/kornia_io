@@ -27,4 +27,19 @@ Install flamegraph and activate perf (remove after be used)
 
 `echo -1 | sudo tee /proc/sys/kernel/perf_event_paranoid`
 
+check `benches/my_benchmark.rs` for uncomment the benchmarking
+
+and runs:
+
+```rust
+cargo bench
+```
+with the simple profiler and
+
+```rust
+cargo bench --bench my_benchmark-- --profile-time=5
+````
+To get a flamegraph.svg graph (uncomment the profiler code)
+
+
 ![alt text](flamegraph.svg)
