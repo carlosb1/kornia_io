@@ -4,12 +4,27 @@
 use image::*;
 use pyo3::prelude::*;
 
+// internal lib
+mod tensor;
+use tensor::Tensor;
+
 #[pyfunction]
 pub fn read_image(file_path: String) -> (Vec<u8>, Vec<usize>) {
     let img: image::DynamicImage = image::open(file_path).unwrap();
     let new_shape: Vec<usize> = Vec::from([img.height() as usize, img.width() as usize, 3]);
+    // TODO: check the line below since it copies and we might want
+    // to just pass a pointer to the data.
     let new_data: Vec<u8> = img.to_rgb8().to_vec();
+    // NOTE: are this two things the same ? We should benchmark.
+    //let buf_data: &[u8] = img.as_bytes();
+    //let new_data: Vec<u8> = (*buf_data).iter().cloned().collect();
     (new_data, new_shape)
+}
+
+#[pyfunction]
+pub fn read_image_dlpack(file_path: String) -> Tensor {
+    let (data, shape) = read_image(file_path);
+    Tensor { shape: shape, data: data }
 }
 
 #[pyfunction]
@@ -36,8 +51,10 @@ pub fn show_image_from_raw(data: Vec<u8>, shape: Vec<usize>) {
 #[pymodule]
 pub fn kornia_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(read_image, m)?)?;
+    m.add_function(wrap_pyfunction!(read_image_dlpack, m)?)?;
     m.add_function(wrap_pyfunction!(show_image_from_file, m)?)?;
     m.add_function(wrap_pyfunction!(show_image_from_raw, m)?)?;
+    m.add_class::<Tensor>()?;
     Ok(())
 }
 

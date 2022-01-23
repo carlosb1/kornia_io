@@ -4,7 +4,8 @@ import kornia_io as K_io
 
 file_path = "/home/edgar/Downloads/IMG_20211219_145924.jpg"
 
-img_t = K_io.read_image(file_path, device=torch.device("cpu"))
+#img_t = K_io.read_image(file_path, device=torch.device("cpu"))
+img_t = K_io.read_image_dlpack(file_path, device=torch.device("cpu"))
 print(img_t.shape)
 print(img_t.device)
 

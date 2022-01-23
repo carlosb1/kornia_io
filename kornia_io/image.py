@@ -150,8 +150,14 @@ class Image(Tensor):
 # TODO: implement Image class here
 def read_image(file_path: str, device: Optional[torch.device] = None) -> Tensor:
     data, shape = kornia_rs.read_image(file_path)
+    import pdb;pdb.set_trace()
     img_t = torch.as_tensor(data, device=device, dtype=torch.uint8)
     return img_t.reshape(shape).permute(2, 1, 0)  # CxHxW
+
+def read_image_dlpack(file_path: str, device: Optional[torch.device] = None) -> Tensor:
+    dl_tensor = kornia_rs.read_image_dlpack(file_path)
+    import pdb;pdb.set_trace()
+    pass
 
 def show_image(_input: Union[str, Tensor]) -> None:
     if isinstance(_input, str):
