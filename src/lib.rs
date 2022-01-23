@@ -1,13 +1,8 @@
-#![feature(test)]
-extern crate test;
+//#![feature(test)]
+//extern crate test;
 
 use image::*;
 use pyo3::prelude::*;
-
-#[pyfunction]
-fn my_fcn() -> () {
-    println!("hello world");
-}
 
 #[pyfunction]
 pub fn read_image(file_path: String) -> (Vec<u8>, Vec<usize>) {
@@ -17,10 +12,32 @@ pub fn read_image(file_path: String) -> (Vec<u8>, Vec<usize>) {
     (new_data, new_shape)
 }
 
+#[pyfunction]
+pub fn show_image_from_file(file_path: String) {
+    vviz::app::spawn(move |mut manager: vviz::manager::Manager| {
+        let img: image::DynamicImage = image::open(file_path.clone()).unwrap();
+        manager.add_widget2("img".to_string(), img);
+        manager.sync_with_gui();
+    });
+}
+
+#[pyfunction]
+pub fn show_image_from_raw(data: Vec<u8>, shape: Vec<usize>) {
+    vviz::app::spawn(move |mut manager: vviz::manager::Manager| {
+        let height = shape[0] as u32;
+        let width = shape[1] as u32;
+        let buf: RgbImage = image::ImageBuffer::from_raw(width, height, data).unwrap();
+        let img = image::DynamicImage::from(image::DynamicImage::ImageRgb8(buf));
+        manager.add_widget2("img".to_string(), img);
+        manager.sync_with_gui();
+    });
+}
+
 #[pymodule]
 pub fn kornia_rs(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(my_fcn, m)?)?;
     m.add_function(wrap_pyfunction!(read_image, m)?)?;
+    m.add_function(wrap_pyfunction!(show_image_from_file, m)?)?;
+    m.add_function(wrap_pyfunction!(show_image_from_raw, m)?)?;
     Ok(())
 }
 

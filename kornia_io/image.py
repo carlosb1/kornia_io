@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -148,6 +148,17 @@ class Image(Tensor):
 ## READING API
 
 # TODO: implement Image class here
-def read_image(file_path: str) -> Tensor:
+def read_image(file_path: str, device: Optional[torch.device] = None) -> Tensor:
     data, shape = kornia_rs.read_image(file_path)
-    return torch.tensor(data, dtype=torch.uint8).reshape(shape)
+    img_t = torch.as_tensor(data, device=device, dtype=torch.uint8)
+    return img_t.reshape(shape).permute(2, 1, 0)  # CxHxW
+
+def show_image(_input: Union[str, Tensor]) -> None:
+    if isinstance(_input, str):
+        file_path: str = _input
+        return kornia_rs.show_image_from_file(file_path)
+    elif isinstance(_input, Tensor):
+        img_t = _input.permute(2, 1, 0) # CxHxW -> HxWxC
+        data = img_t.cpu().reshape(-1).tolist() # flatten (HxWxC)
+        return kornia_rs.show_image_from_raw(data, img_t.shape)
+    return
