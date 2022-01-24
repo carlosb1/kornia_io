@@ -1,73 +1,8 @@
-use image::GenericImageView;
-use std::path::Path;
+pub mod cv {
 
 use pyo3::prelude::*;
+use dlpack::DLManagedTensor;
 
-use std::os::raw::c_void;
-
-// implement the dlpack data structure 
-// https://github.com/dmlc/dlpack/blob/main/include/dlpack/dlpack.h
-
-#[pyclass]
-enum DLDeviceType {
-  kDLCPU,
-  kDLCUDA,
-  kDLCUDAHost,
-  kDLOpenCL,
-  kDLVulkan,
-  kDLMetal,
-  kDLVPI,
-  kDLROCM,
-  kDLROCMHost,
-  kDLExtDev,
-  kDLCUDAManaged,
-  kDLOneAPI,
-  kDLWebGPU,
-  kDLHexagon,
-}
-
-#[pyclass]
-pub struct DLDevice {
-  pub device_type: DLDeviceType,
-  pub device_id: i32,
-}
-
-#[pyclass]
-enum DLDataTypeCode {
-  kDLInt,
-  kDLUInt,
-  kDLFloat,
-  kDLOpaqueHandle,
-  kDLBfloat,
-  kDLComplex,
-}
-
-#[pyclass]
-pub struct DLDataType {
-    pub code: u8,
-    pub bits: u8,
-    pub lanes: u16,
-}
-
-enum void_ptr {}
-
-#[pyclass]
-pub struct DLTensor {
-    pub data: *mut c_void,
-    pub device: DLDevice,
-    pub ndim: u32,
-    pub dtype: DLDataType,
-    pub shape: *mut i64,
-    pub strides: *mut i64,
-    pub byte_offset: u64,
-
-}
-
-#[pyclass]
-pub struct DLManagedTensor {
-    pub dl_tensor: DLTensor,
-    pub manager_ctx: *mut c_void,
-}
 
 #[pyclass]
 #[derive(Debug, Clone, PartialEq)]
@@ -87,6 +22,18 @@ impl Tensor {
             data: data,
         }
     }
+
+    // TODO: this needs to be done properly
+    // NOW IT DOESN'T WORK -- JUST A PROTOTYPE
+    pub fn to_dlpack(&self) -> DLManagedTensor { 
+        managed = DLManagedTensor();
+        managed.dl_tensor = DLTensor();
+        managed.dl_tensor.data self.data;
+
+
+        return dl_managed;
+    }
+
     #[getter]
     pub fn dims(&self) -> usize {
         self.data.len()
@@ -172,6 +119,8 @@ pub fn cumprod(data: &Vec<usize>) -> usize {
     }
     return acc;
 }
+
+}  // namespace cv
 
 #[cfg(test)]
 mod tests {

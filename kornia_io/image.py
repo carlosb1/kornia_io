@@ -156,8 +156,7 @@ def read_image(file_path: str, device: Optional[torch.device] = None) -> Tensor:
 
 def read_image_dlpack(file_path: str, device: Optional[torch.device] = None) -> Tensor:
     dl_tensor = kornia_rs.read_image_dlpack(file_path)
-    import pdb;pdb.set_trace()
-    pass
+    return torch.utils.dlpacl.from_dlpack(dl_tensor)
 
 def show_image(_input: Union[str, Tensor]) -> None:
     if isinstance(_input, str):

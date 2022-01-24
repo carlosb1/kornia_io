@@ -6,7 +6,6 @@ use pyo3::prelude::*;
 
 // internal lib
 mod tensor;
-use tensor::Tensor;
 
 #[pyfunction]
 pub fn read_image(file_path: String) -> (Vec<u8>, Vec<usize>) {
@@ -22,9 +21,10 @@ pub fn read_image(file_path: String) -> (Vec<u8>, Vec<usize>) {
 }
 
 #[pyfunction]
-pub fn read_image_dlpack(file_path: String) -> Tensor {
+pub fn read_image_dlpack(file_path: String) -> dlpack::DLManagedTensor {
     let (data, shape) = read_image(file_path);
-    Tensor { shape: shape, data: data }
+    let img_t = cv::Tensor { shape: shape, data: data };
+    return img_t.to_dlpack();
 }
 
 #[pyfunction]
@@ -54,7 +54,7 @@ pub fn kornia_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(read_image_dlpack, m)?)?;
     m.add_function(wrap_pyfunction!(show_image_from_file, m)?)?;
     m.add_function(wrap_pyfunction!(show_image_from_raw, m)?)?;
-    m.add_class::<Tensor>()?;
+    m.add_class::<cv::Tensor>()?;
     Ok(())
 }
 
