@@ -5,6 +5,7 @@ use image::*;
 use pyo3::prelude::*;
 
 // internal lib
+mod dlpack;
 mod tensor;
 
 #[pyfunction]
@@ -23,7 +24,10 @@ pub fn read_image(file_path: String) -> (Vec<u8>, Vec<usize>) {
 #[pyfunction]
 pub fn read_image_dlpack(file_path: String) -> dlpack::DLManagedTensor {
     let (data, shape) = read_image(file_path);
-    let img_t = cv::Tensor { shape: shape, data: data };
+    let img_t = cv::Tensor {
+        shape: shape,
+        data: data,
+    };
     return img_t.to_dlpack();
 }
 

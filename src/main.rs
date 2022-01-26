@@ -2,6 +2,8 @@ use kornia_rs::*;
 use std::path::PathBuf;
 use std::time::SystemTime;
 
+mod dlpack;
+
 fn main() {
     let PATH: PathBuf = [env!("CARGO_MANIFEST_DIR"), "clients", "test.jpg"]
         .iter()
