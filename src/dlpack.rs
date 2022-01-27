@@ -2,9 +2,10 @@
 // https://github.com/dmlc/dlpack/blob/main/include/dlpack/dlpack.h
 pub mod dlpack {
 
+    use pyo3::prelude::*;
     use std::os::raw::c_void;
 
-    enum DLDeviceType {
+    pub enum DLDeviceType {
         kDLCPU,
         kDLCUDA,
         kDLCUDAHost,
@@ -26,7 +27,7 @@ pub mod dlpack {
         pub device_id: i32,
     }
 
-    enum DLDataTypeCode {
+    pub enum DLDataTypeCode {
         kDLInt,
         kDLUInt,
         kDLFloat,
@@ -42,18 +43,43 @@ pub mod dlpack {
     }
 
     pub struct DLTensor {
-        pub data: *mut c_void,
+        //pub data: *mut c_void,
         pub device: DLDevice,
         pub ndim: u32,
         pub dtype: DLDataType,
-        pub shape: *mut i64,
-        pub strides: *mut i64,
+        //pub shape: *mut i64,
+        //pub strides: *mut i64,
         pub byte_offset: u64,
+    }
+    impl DLTensor {
+        pub fn new() -> Self {
+            DLTensor {
+                device: DLDevice {
+                    device_type: DLDeviceType::kDLCPU,
+                    device_id: 1,
+                },
+                ndim: 1,
+                dtype: DLDataType {
+                    code: 1,
+                    bits: 1,
+                    lanes: 1,
+                },
+                byte_offset: 1,
+            }
+        }
     }
 
     #[pyclass]
     pub struct DLManagedTensor {
         pub dl_tensor: DLTensor,
-        pub manager_ctx: *mut c_void,
+        //pub manager_ctx: *mut c_void,
+    }
+
+    impl DLManagedTensor {
+        pub fn new() -> Self {
+            DLManagedTensor {
+                dl_tensor: DLTensor::new(),
+            }
+        }
     }
 } // namespace dlpack

@@ -1,5 +1,5 @@
-//#![feature(test)]
-//extern crate test;
+#![feature(test)]
+extern crate test;
 
 use image::*;
 use pyo3::prelude::*;
@@ -22,9 +22,9 @@ pub fn read_image(file_path: String) -> (Vec<u8>, Vec<usize>) {
 }
 
 #[pyfunction]
-pub fn read_image_dlpack(file_path: String) -> dlpack::DLManagedTensor {
+pub fn read_image_dlpack(file_path: String) -> dlpack::dlpack::DLManagedTensor {
     let (data, shape) = read_image(file_path);
-    let img_t = cv::Tensor {
+    let img_t = tensor::cv::Tensor {
         shape: shape,
         data: data,
     };
@@ -58,7 +58,7 @@ pub fn kornia_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(read_image_dlpack, m)?)?;
     m.add_function(wrap_pyfunction!(show_image_from_file, m)?)?;
     m.add_function(wrap_pyfunction!(show_image_from_raw, m)?)?;
-    m.add_class::<cv::Tensor>()?;
+    m.add_class::<tensor::cv::Tensor>()?;
     Ok(())
 }
 
