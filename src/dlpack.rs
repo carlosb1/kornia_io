@@ -43,17 +43,18 @@ pub mod dlpack {
     }
 
     pub struct DLTensor {
-        //pub data: *mut c_void,
+        pub data: Vec<u8>,
         pub device: DLDevice,
         pub ndim: u32,
         pub dtype: DLDataType,
-        //pub shape: *mut i64,
-        //pub strides: *mut i64,
+        pub shape: Vec<i64>,
+        pub strides: Vec<i64>,
         pub byte_offset: u64,
     }
     impl DLTensor {
         pub fn new() -> Self {
             DLTensor {
+                data: Vec::new(),
                 device: DLDevice {
                     device_type: DLDeviceType::kDLCPU,
                     device_id: 1,
@@ -64,6 +65,8 @@ pub mod dlpack {
                     bits: 1,
                     lanes: 1,
                 },
+                shape: Vec::new(),
+                strides: Vec::new(),
                 byte_offset: 1,
             }
         }
