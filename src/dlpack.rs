@@ -75,13 +75,14 @@ pub mod dlpack {
     #[pyclass]
     pub struct DLManagedTensor {
         pub dl_tensor: DLTensor,
-        //pub manager_ctx: *mut c_void,
+        pub manager_ctx: Vec<u8>,
     }
 
     impl DLManagedTensor {
         pub fn new() -> Self {
             DLManagedTensor {
                 dl_tensor: DLTensor::new(),
+                manager_ctx: Vec::new(),
             }
         }
     }
