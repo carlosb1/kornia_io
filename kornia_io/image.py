@@ -150,7 +150,6 @@ class Image(Tensor):
 # TODO: implement Image class here
 def read_image(file_path: str, device: Optional[torch.device] = None) -> Tensor:
     data, shape = kornia_rs.read_image(file_path)
-    import pdb;pdb.set_trace()
     img_t = torch.as_tensor(data, device=device, dtype=torch.uint8)
     return img_t.reshape(shape).permute(2, 1, 0)  # CxHxW
 
@@ -163,7 +162,13 @@ def show_image(_input: Union[str, Tensor]) -> None:
         file_path: str = _input
         return kornia_rs.show_image_from_file(file_path)
     elif isinstance(_input, Tensor):
-        img_t = _input.permute(2, 1, 0) # CxHxW -> HxWxC
-        data = img_t.cpu().reshape(-1).tolist() # flatten (HxWxC)
-        return kornia_rs.show_image_from_raw(data, img_t.shape)
+        img = _input
+        if img.shape[-3] == 1:
+            img = img.repeat(3, 1, 1)
+        if img.dtype == torch.float:
+            img = img.mul_(255.).byte()
+
+        img = img.permute(2, 1, 0)  # CxHxW -> HxWxC
+        data = img.cpu().reshape(-1).tolist()  # flatten (HxWxC)
+        return kornia_rs.show_image_from_raw(data, img.shape)
     return
