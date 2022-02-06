@@ -43,7 +43,8 @@ pub mod dlpack {
     }
 
     pub struct DLTensor {
-        pub data: Vec<u8>,
+        //pub data: Vec<u8>,
+        pub data: *mut c_void,
         pub device: DLDevice,
         pub ndim: u32,
         pub dtype: DLDataType,
@@ -54,7 +55,8 @@ pub mod dlpack {
     impl DLTensor {
         pub fn new() -> Self {
             DLTensor {
-                data: Vec::new(),
+                data: c_void,
+                //data: Vec::new(),
                 device: DLDevice {
                     device_type: DLDeviceType::kDLCPU,
                     device_id: 1,
@@ -75,14 +77,14 @@ pub mod dlpack {
     #[pyclass]
     pub struct DLManagedTensor {
         pub dl_tensor: DLTensor,
-        pub manager_ctx: Vec<u8>,
+        //pub manager_ctx: Vec<u8>,
     }
 
     impl DLManagedTensor {
         pub fn new() -> Self {
             DLManagedTensor {
                 dl_tensor: DLTensor::new(),
-                manager_ctx: Vec::new(),
+                //manager_ctx: Vec::new(),
             }
         }
     }
