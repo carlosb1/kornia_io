@@ -2,6 +2,7 @@ pub mod cv {
 
     use crate::dlpack::dlpack::{DLManagedTensor, DLTensor};
     use pyo3::prelude::*;
+    use std::ffi::c_void;
 
     #[pyclass]
     #[derive(Debug, Clone, PartialEq)]
@@ -24,13 +25,13 @@ pub mod cv {
 
         // TODO: this needs to be done properly
         // NOW IT DOESN'T WORK -- JUST A PROTOTYPE
-        pub fn to_dlpack(&self) -> DLManagedTensor {
-            //let mut managed = DLManagedTensor::new();
-            //managed.dl_tensor = DLTensor::new();
+        pub fn to_dlpack(&mut self) -> DLManagedTensor {
             let mut managed = DLManagedTensor::new();
             managed.dl_tensor.data = self.data.as_mut_ptr() as *mut c_void;
-            managed.dl_tensor.byte_offset = 0;
-            return managed;
+            managed.dl_tensor.shape = self.shape.iter().map(|&x| x as i64).collect();
+            managed.dl_tensor.ndim = self.shape.len() as u32;
+            managed.dl_tensor.strides = vec![0, self.shape.len() as i64];
+            managed
         }
 
         #[getter]

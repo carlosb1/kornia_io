@@ -2,7 +2,7 @@
 extern crate test;
 
 use image::*;
-use pyo3::prelude::*;
+use pyo3::{prelude::*, types::PyCapsule};
 
 // internal lib
 mod dlpack;
@@ -24,7 +24,7 @@ pub fn read_image(file_path: String) -> (Vec<u8>, Vec<usize>) {
 #[pyfunction]
 pub fn read_image_dlpack(file_path: String) -> dlpack::dlpack::DLManagedTensor {
     let (data, shape) = read_image(file_path);
-    let img_t = tensor::cv::Tensor {
+    let mut img_t = tensor::cv::Tensor {
         shape: shape,
         data: data,
     };

@@ -1,9 +1,12 @@
 // implement the dlpack data structure
 // https://github.com/dmlc/dlpack/blob/main/include/dlpack/dlpack.h
+
+// check this
+// https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/DLConvertor.cpp
 pub mod dlpack {
 
     use pyo3::prelude::*;
-    use std::os::raw::c_void;
+    use std::ffi::c_void;
 
     pub enum DLDeviceType {
         kDLCPU,
@@ -43,7 +46,6 @@ pub mod dlpack {
     }
 
     pub struct DLTensor {
-        //pub data: Vec<u8>,
         pub data: *mut c_void,
         pub device: DLDevice,
         pub ndim: u32,
@@ -55,8 +57,7 @@ pub mod dlpack {
     impl DLTensor {
         pub fn new() -> Self {
             DLTensor {
-                data: c_void,
-                //data: Vec::new(),
+                data: std::ptr::null_mut(),
                 device: DLDevice {
                     device_type: DLDeviceType::kDLCPU,
                     device_id: 1,
@@ -69,7 +70,7 @@ pub mod dlpack {
                 },
                 shape: Vec::new(),
                 strides: Vec::new(),
-                byte_offset: 1,
+                byte_offset: 0,
             }
         }
     }
@@ -77,15 +78,21 @@ pub mod dlpack {
     #[pyclass]
     pub struct DLManagedTensor {
         pub dl_tensor: DLTensor,
-        //pub manager_ctx: Vec<u8>,
+        pub manager_ctx: *mut c_void,
+        //pub deleter: extern fn (*mut DLManagedTensor),
     }
 
     impl DLManagedTensor {
         pub fn new() -> Self {
             DLManagedTensor {
                 dl_tensor: DLTensor::new(),
-                //manager_ctx: Vec::new(),
+                manager_ctx: std::ptr::null_mut(),
+                //deleter: std::ptr::null_mut(),
             }
         }
     }
+
+    unsafe impl Send for DLManagedTensor {}
+    unsafe impl Sync for DLManagedTensor {}
+
 } // namespace dlpack
