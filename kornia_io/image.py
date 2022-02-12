@@ -154,6 +154,7 @@ def read_image(file_path: str, device: Optional[torch.device] = None) -> Tensor:
     return img_t.reshape(shape).permute(2, 1, 0)  # CxHxW
 
 def read_image_dlpack(file_path: str, device: Optional[torch.device] = None) -> Tensor:
+    #import pdb;pdb.set_trace()
     dl_tensor = kornia_rs.read_image_dlpack(file_path)
     return torch.utils.dlpack.from_dlpack(dl_tensor)
 

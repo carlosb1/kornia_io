@@ -1,8 +1,18 @@
 pub mod cv {
 
-    use crate::dlpack::dlpack::{DLManagedTensor, DLTensor};
+    use crate::dlpack::*;
     use pyo3::prelude::*;
     use std::ffi::c_void;
+
+    unsafe extern "C" fn deleter(x: *mut DLManagedTensor) {
+        println!("DLManagedTensor deleter");
+
+        let ctx = (*x).manager_ctx as *mut Tensor;
+        ctx.drop_in_place();
+        //(*x).dl_tensor.shape.drop_in_place();
+        //(*x).dl_tensor.strides.drop_in_place();
+        x.drop_in_place();
+    }
 
     #[pyclass]
     #[derive(Debug, Clone, PartialEq)]
@@ -13,9 +23,7 @@ pub mod cv {
         pub data: Vec<u8>,
     }
 
-    #[pymethods]
     impl Tensor {
-        #[new]
         pub fn new(shape: Vec<usize>, data: Vec<u8>) -> Self {
             Tensor {
                 shape: shape,
@@ -23,18 +31,39 @@ pub mod cv {
             }
         }
 
-        // TODO: this needs to be done properly
-        // NOW IT DOESN'T WORK -- JUST A PROTOTYPE
-        pub fn to_dlpack(&mut self) -> DLManagedTensor {
-            let mut managed = DLManagedTensor::new();
-            managed.dl_tensor.data = self.data.as_mut_ptr() as *mut c_void;
-            managed.dl_tensor.shape = self.shape.iter().map(|&x| x as i64).collect();
-            managed.dl_tensor.ndim = self.shape.len() as u32;
-            managed.dl_tensor.strides = vec![0, self.shape.len() as i64];
-            managed
+        // TODO: something is wrong with the context
+        pub fn to_dlpack(&mut self) -> Box<DLManagedTensor> {
+            let tensor_bx = Box::new(self);
+            let dl_tensor = DLTensor {
+                //data: self.data.as_mut_ptr() as *mut c_void,
+                data: tensor_bx.data.as_mut_ptr() as *mut c_void,
+                device: DLDevice {
+                    device_type: DLDeviceType::kDLCPU,
+                    device_id: 0,
+                },
+                //ndim: self.shape.len() as u32,
+                ndim: tensor_bx.shape.len() as u32,
+                dtype: DLDataType {
+                    code: DLDataTypeCode::kDLFloat as u8,
+                    bits: 32,
+                    lanes: 1,
+                },
+                //shape: self.shape.iter().map(|&x| x as i64).collect(),
+                shape: tensor_bx.shape.iter().map(|&x| x as i64).collect(),
+                //strides: vec![0, self.shape.len() as i64],
+                strides: vec![0, tensor_bx.shape.len() as i64],
+                byte_offset: 0,
+            };
+
+            let dlm_tensor = DLManagedTensor {
+                dl_tensor,
+                manager_ctx: Box::into_raw(tensor_bx) as *mut c_void,
+                deleter: Some(deleter),
+            };
+            let ptr = Box::new(dlm_tensor);
+            ptr
         }
 
-        #[getter]
         pub fn dims(&self) -> usize {
             self.data.len()
         }
