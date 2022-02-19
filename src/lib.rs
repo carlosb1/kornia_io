@@ -107,21 +107,21 @@ pub fn read_image_dlpack(file_path: String) -> PyResult<*mut pyo3::ffi::PyObject
 
 #[pyfunction]
 pub fn show_image_from_file(file_path: String) {
-    vviz::app::spawn(vviz::app::VVizMode::Local, | mut manager: vviz::manager::Manager| {
+    vviz::app::spawn(vviz::app::VVizMode::Local, move | mut manager: vviz::manager::Manager| {
         let img: image::DynamicImage = image::open(file_path.clone()).unwrap();
-        manager.add_widget2("img".to_string(), img);
+        manager.add_widget2("img".to_string(), img.into_rgba8());
         manager.sync_with_gui();
     });
 }
 
 #[pyfunction]
 pub fn show_image_from_raw(data: Vec<u8>, shape: Vec<usize>) {
-    vviz::app::spawn(vviz::app::VVizMode::Local, | mut manager: vviz::manager::Manager| {
+    vviz::app::spawn(vviz::app::VVizMode::Local, move | mut manager: vviz::manager::Manager| {
         let height = shape[0] as u32;
         let width = shape[1] as u32;
         let buf: RgbImage = image::ImageBuffer::from_raw(width, height, data).unwrap();
         let img = image::DynamicImage::from(image::DynamicImage::ImageRgb8(buf));
-        manager.add_widget2("img".to_string(), img);
+        manager.add_widget2("img".to_string(), img.into_rgba8());
         manager.sync_with_gui();
     });
 }
