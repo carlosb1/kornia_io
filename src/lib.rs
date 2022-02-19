@@ -5,6 +5,9 @@ use image::*;
 use pyo3::prelude::*;
 use std::ffi::{c_void, CStr, CString};
 
+// for libjpeg-turbo
+use turbojpeg::{Decompressor, Image, PixelFormat};
+
 // internal lib
 mod dlpack;
 mod tensor;
@@ -21,6 +24,40 @@ pub fn read_image(file_path: String) -> (Vec<u8>, Vec<usize>) {
     //let buf_data: &[u8] = img.as_bytes();
     //let new_data: Vec<u8> = (*buf_data).iter().cloned().collect();
     (new_data, new_shape)
+}
+
+fn _read_image_jpeg(file_path: String) -> Result<(), Box<dyn std::error::Error>> {
+    // get the JPEG data
+    let jpeg_data = std::fs::read(file_path)?;
+
+    // initialize a Decompressor   
+    let mut decompressor = Decompressor::new()?;
+
+    // read the JPEG header with image size
+    let header = decompressor.read_header(&jpeg_data)?;
+    let (width, height) = (header.width, header.height);
+
+    // prepare a storage for the raw pixel data
+    let mut pixels = vec![0; 3*width*height];
+    let image = Image {
+        pixels: pixels.as_mut_slice(),
+        width: width,
+        pitch: 3 * width, // we use no padding between rows
+        height: height,
+        format: PixelFormat::RGB,
+    };
+
+    // decompress the JPEG data 
+    decompressor.decompress_to_slice(&jpeg_data, image)?;
+
+    // use the raw pixel data
+    println!("{:?}", &pixels[0..9]);
+    Ok(())
+}
+
+#[pyfunction]
+pub fn read_image_jpeg(file_path: String) {
+    let out = _read_image_jpeg(file_path);
 }
 
 // desctructor function for the python capsule
@@ -92,6 +129,7 @@ pub fn show_image_from_raw(data: Vec<u8>, shape: Vec<usize>) {
 #[pymodule]
 pub fn kornia_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(read_image, m)?)?;
+    m.add_function(wrap_pyfunction!(read_image_jpeg, m)?)?;
     m.add_function(wrap_pyfunction!(read_image_dlpack, m)?)?;
     m.add_function(wrap_pyfunction!(show_image_from_file, m)?)?;
     m.add_function(wrap_pyfunction!(show_image_from_raw, m)?)?;

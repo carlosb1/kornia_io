@@ -35,22 +35,18 @@ pub mod cv {
         pub fn to_dlpack(&mut self) -> Box<DLManagedTensor> {
             let tensor_bx = Box::new(self);
             let dl_tensor = DLTensor {
-                //data: self.data.as_mut_ptr() as *mut c_void,
                 data: tensor_bx.data.as_mut_ptr() as *mut c_void,
                 device: DLDevice {
                     device_type: DLDeviceType::kDLCPU,
                     device_id: 0,
                 },
-                //ndim: self.shape.len() as u32,
                 ndim: tensor_bx.shape.len() as u32,
                 dtype: DLDataType {
                     code: DLDataTypeCode::kDLFloat as u8,
                     bits: 32,
                     lanes: 1,
                 },
-                //shape: self.shape.iter().map(|&x| x as i64).collect(),
                 shape: tensor_bx.shape.iter().map(|&x| x as i64).collect(),
-                //strides: vec![0, self.shape.len() as i64],
                 strides: vec![0, tensor_bx.shape.len() as i64],
                 byte_offset: 0,
             };
