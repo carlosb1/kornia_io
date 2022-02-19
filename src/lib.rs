@@ -26,7 +26,7 @@ pub fn read_image(file_path: String) -> (Vec<u8>, Vec<usize>) {
     (new_data, new_shape)
 }
 
-fn _read_image_jpeg(file_path: String) -> Result<(), Box<dyn std::error::Error>> {
+fn _read_image_jpeg_impl(file_path: String) -> Result<(Vec<u8>, Vec<usize>), Box<dyn std::error::Error>> {
     // get the JPEG data
     let jpeg_data = std::fs::read(file_path)?;
 
@@ -50,14 +50,16 @@ fn _read_image_jpeg(file_path: String) -> Result<(), Box<dyn std::error::Error>>
     // decompress the JPEG data 
     decompressor.decompress_to_slice(&jpeg_data, image)?;
 
-    // use the raw pixel data
-    println!("{:?}", &pixels[0..9]);
-    Ok(())
+    // return the raw pixel data and shape
+    Ok((pixels, vec![height, width, 3] ))
 }
 
 #[pyfunction]
-pub fn read_image_jpeg(file_path: String) {
-    let out = _read_image_jpeg(file_path);
+pub fn read_image_jpeg(file_path: String) -> (Vec<u8>, Vec<usize>) {
+    // decode image and return tuple with data and shape
+    let (data, shape) = _read_image_jpeg_impl(file_path).unwrap();
+    // TODO: implement DLTensor
+    (data, shape)
 }
 
 // desctructor function for the python capsule

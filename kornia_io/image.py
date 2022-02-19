@@ -1,3 +1,4 @@
+from distutils import extension
 from enum import Enum
 from typing import List, Optional, Tuple, Union
 
@@ -149,14 +150,24 @@ class Image(Tensor):
 
 # TODO: implement Image class here
 def read_image(file_path: str, device: Optional[torch.device] = None) -> Tensor:
-    data, shape = kornia_rs.read_image(file_path)
+    # TODO: implement extension with pathlib
+    extension: str = file_path.split('.')[-1]
+    if extension == "jpg":
+        # use libjpeg-turbo for best performance
+        data, shape = kornia_rs.read_image_jpeg(file_path)
+    else:
+        # use image-rs for general image decoding
+        data, shape = kornia_rs.read_image(file_path)
+    # cast to tensor and device, data comes in HxWxC
     img_t = torch.as_tensor(data, device=device, dtype=torch.uint8)
     return img_t.reshape(shape).permute(2, 1, 0)  # CxHxW
 
+
 def read_image_dlpack(file_path: str, device: Optional[torch.device] = None) -> Tensor:
-    #import pdb;pdb.set_trace()
+    # import pdb;pdb.set_trace()
     dl_tensor = kornia_rs.read_image_dlpack(file_path)
     return torch.utils.dlpack.from_dlpack(dl_tensor)
+
 
 def show_image(_input: Union[str, Tensor]) -> None:
     if isinstance(_input, str):

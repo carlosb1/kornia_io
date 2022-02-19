@@ -6,7 +6,7 @@ import kornia_io as K_io
 file_path = "/home/edgar/Downloads/IMG_20211219_145924.jpg"
 
 # load the image directly in the gpu
-img = K_io.read_image(file_path, device=torch.device("cuda:0"))
+img = K_io.read_image(file_path, device=torch.device("cpu"))
 img_src = img.clone()  # for vis
 print(f"Image: {img.shape}, dtype: {img.dtype}, device: {img.device}")
 
