@@ -9,6 +9,7 @@ from torch import Tensor
 
 import kornia as K
 import kornia_rs
+from kornia_rs import Tensor as cvTensor
 
 
 class ImageColor(Enum):
@@ -151,16 +152,18 @@ class Image(Tensor):
 # TODO: implement Image class here
 def read_image(file_path: str, device: Optional[torch.device] = None) -> Tensor:
     # TODO: implement extension with pathlib
+    tensor: cvTensor
     extension: str = file_path.split('.')[-1]
     if extension == "jpg":
         # use libjpeg-turbo for best performance
-        data, shape = kornia_rs.read_image_jpeg(file_path)
+        tensor = kornia_rs.read_image_jpeg(file_path)
     else:
         # use image-rs for general image decoding
-        data, shape = kornia_rs.read_image_rs(file_path)
+        tensor = kornia_rs.read_image_rs(file_path)
     # cast to tensor and device, data comes in WxHxC
-    img_t = torch.as_tensor(data, device=device, dtype=torch.uint8)
-    return img_t.reshape(shape).permute(2, 1, 0)  # CxHxW
+    # TODO: implement from dlpack
+    img_t = torch.as_tensor(tensor.data, device=device, dtype=torch.uint8)
+    return img_t.reshape(tensor.shape).permute(2, 1, 0)  # CxHxW
 
 
 def read_image_dlpack(file_path: str, device: Optional[torch.device] = None) -> Tensor:

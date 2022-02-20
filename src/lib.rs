@@ -44,14 +44,6 @@ impl VizManager {
 
 }
 
-#[pyfunction]
-pub fn read_image_rs(file_path: String) -> (Vec<u8>, Vec<usize>) {
-    let img: image::DynamicImage = image::open(file_path).unwrap();
-    let shape = vec![img.width() as usize, img.height() as usize, 3];
-    let data = img.to_rgb8().to_vec();
-    (data, shape)
-}
-
 fn _read_image_jpeg_impl(file_path: String) -> Result<(Vec<u8>, Vec<usize>), Box<dyn std::error::Error>> {
     // get the JPEG data
     let jpeg_data = std::fs::read(file_path)?;
@@ -82,11 +74,18 @@ fn _read_image_jpeg_impl(file_path: String) -> Result<(Vec<u8>, Vec<usize>), Box
 }
 
 #[pyfunction]
-pub fn read_image_jpeg(file_path: String) -> (Vec<u8>, Vec<usize>) {
+pub fn read_image_jpeg(file_path: String) -> tensor::cv::Tensor {
     // decode image and return tuple with data and shape
     let (data, shape) = _read_image_jpeg_impl(file_path).unwrap();
-    // TODO: implement DLTensor
-    (data, shape)
+    tensor::cv::Tensor {data: data, shape: shape}
+}
+
+#[pyfunction]
+pub fn read_image_rs(file_path: String) -> tensor::cv::Tensor {
+    let img: image::DynamicImage = image::open(file_path).unwrap();
+    let data = img.to_rgb8().to_vec();
+    let shape = vec![img.width() as usize, img.height() as usize, 3];
+    tensor::cv::Tensor{data: data, shape: shape}
 }
 
 // desctructor function for the python capsule
@@ -114,12 +113,7 @@ unsafe extern "C" fn destructor(o: *mut pyo3::ffi::PyObject) {
 #[pyfunction]
 pub fn read_image_dlpack(file_path: String) -> PyResult<*mut pyo3::ffi::PyObject> {
     // decode image
-    let (data, shape) = read_image_jpeg(file_path);
-    // create kornia tensor
-    let mut img_t = tensor::cv::Tensor {
-        shape: shape,
-        data: data,
-    };
+    let mut img_t: tensor::cv::Tensor = read_image_jpeg(file_path);
     // create dlpack managed tensor
     let dlm_tensor = img_t.to_dlpack();
     let name = CString::new("dltensor").unwrap();

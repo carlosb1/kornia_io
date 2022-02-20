@@ -23,14 +23,18 @@ pub mod cv {
         pub data: Vec<u8>,
     }
 
+    #[pymethods]
     impl Tensor {
+        #[new]
         pub fn new(shape: Vec<usize>, data: Vec<u8>) -> Self {
             Tensor {
                 shape: shape,
                 data: data,
             }
         }
+    }
 
+    impl Tensor {
         // TODO: something is wrong with the context
         pub fn to_dlpack(&mut self) -> Box<DLManagedTensor> {
             let tensor_bx = Box::new(self);

@@ -1,9 +1,10 @@
-from turtle import shape
 import torch
 from torch import Tensor
 
 import kornia as K
 import kornia_io as K_io
+import kornia_rs as K_rs
+from kornia_rs import Tensor as cvTensor
 
 file_path = "/home/edgar/Downloads/IMG_20211219_145924.jpg"
 
@@ -29,14 +30,15 @@ def to_viz(_img: Tensor, denorm: bool):
     _img = _img.permute(2, 1, 0).contiguous().cpu()
     return _img.reshape(-1).tolist(), _img.shape
 
-import kornia_rs as K_rs
-
 img1_vis, shape1 = to_viz(img_src, denorm=False)
 img2_vis, shape2 = to_viz(img, denorm=True)
 
-#K_rs.show_image_from_raw(img1_vis, shape1)
+#TODO: error -> OverflowError: out of range integral type conversion attempted
+# tensor = cvTensor(img1_vis, shape1)
 
-viz = K_rs.VizManager()
-viz.add_image("original", img1_vis, shape1)
-viz.add_image("distance", img2_vis, shape2)
-viz.show()
+K_rs.show_image_from_raw(img1_vis, shape1)
+
+#viz = K_rs.VizManager()
+#viz.add_image("original", img1_vis, shape1)
+#viz.add_image("distance", img2_vis, shape2)
+#viz.show()
