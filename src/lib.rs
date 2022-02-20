@@ -73,7 +73,6 @@ fn _read_image_jpeg_impl(file_path: String) -> Result<(Vec<u8>, Vec<usize>), Box
     decompressor.decompress_to_slice(&jpeg_data, image)?;
 
     // return the raw pixel data and shape
-    //Ok((pixels, vec![height, width, 3]))
     Ok((pixels, vec![width, height, 3]))
 }
 

@@ -1,27 +1,43 @@
-from distutils import extension
 from enum import Enum
 from typing import List, Optional, Tuple, Union
-
-import numpy as np
+from pathlib import Path
 
 import torch
 from torch import Tensor
 
-import kornia as K
+# for Image -> TODO: use kornia.core.Image later
+from kornia.color import bgr_to_grayscale, bgr_to_rgb, rgb_to_bgr, rgb_to_grayscale
+from kornia.geometry.transform import hflip, vflip
+from kornia.utils import image_to_tensor, tensor_to_image
+
 import kornia_rs
 from kornia_rs import Tensor as cvTensor
-
 
 class ImageColor(Enum):
     GRAY = 0
     RGB = 1
     BGR = 2
 
+class Device(Enum):
+    CPU = 0
+    CUDA = 1
+
+    def from_string(mode: Optional[str] = None) -> Optional[torch.device]:
+        if mode == "cpu":
+            return torch.device("cpu")
+        elif mode == "cuda":
+            return torch.device("cuda")
+        elif mode is None:
+            return None
+        else:
+            raise NotImplementedError(f"Unsupported device: {mode}.")
 
 class Image(Tensor):
-    @staticmethod 
-    def __new__(cls, data, color, *args, **kwargs): 
-        return super().__new__(cls, data, *args, **kwargs) 
+    _color = ImageColor.RGB
+
+    @staticmethod
+    def __new__(cls, data, color, *args, **kwargs):
+        return Tensor._make_subclass(cls, data)
 
     def __init__(self, data: Tensor, color: ImageColor) -> None:
         self._color = color
@@ -44,8 +60,8 @@ class Image(Tensor):
         return self.data.shape[-2]
 
     @property
-    def resolution(self) -> Tuple[int, int]:
-        return self.data.shape[-2:]
+    def resolution(self) -> Tuple[int, ...]:
+        return tuple(self.data.shape[-2:])
 
     @property
     def width(self) -> int:
@@ -55,44 +71,50 @@ class Image(Tensor):
     def color(self) -> ImageColor:
         return self._color
 
-    @color.setter 
-    def color(self, c: ImageColor):
-        self._color = c 
-
     @classmethod
-    def from_tensor(cls, data: Tensor, color: ImageColor = ImageColor.RGB) -> 'Image':
+    def from_tensor(cls, data: Tensor, color: ImageColor) -> 'Image':
         return cls(data, color)
 
+    # TODO: possibly call torch.as_tensor
     @classmethod
-    def from_numpy(cls, data: np.ndarray, color: ImageColor = ImageColor.RGB) -> 'Image':
-        data_t: Tensor = K.utils.image_to_tensor(data).float()
+    def from_numpy(cls, data, color: ImageColor = ImageColor.RGB) -> 'Image':
+        data_t: Tensor = image_to_tensor(data)
         return cls(data_t, color)
 
-    def to_numpy(self) -> np.ndarray:
-        return K.utils.tensor_to_image(self.data, keepdim=True)
+    def to_numpy(self):
+        return tensor_to_image(self.data, keepdim=True)
+
+    def to_viz(self, denorm: bool) -> cvTensor:
+        img = self.data
+        if denorm:
+            img = img.mul_(255)
+        img = img.squeeze_(0).byte()
+        # handle the grayscale case and replicate the channel
+        # to fulfill rgb requirements.
+        if img.shape[0] == 1:
+            img = img.repeat(3, 1, 1)
+        # CxHxW => WxHxC
+        img = img.permute(2, 1, 0).cpu()
+        # TODO: implement cvTensor.from_dlpack(_img.to_dlpack())
+        return cvTensor(img.shape, img.reshape(-1).tolist())
+
+    # TODO: possibly call torch.as_tensor
+    @classmethod
+    def from_list(cls, data: List[List[Union[float, int]]], color: ImageColor) -> 'Image':
+        return cls(Tensor(data), color)
 
     @classmethod
-    def from_list(cls, data: List[List[Union[float, int]]], color: ImageColor = ImageColor.RGB) -> 'Image':
-        data_t: Tensor = Tensor(data)
-        return cls(data_t, color)
+    def from_file(cls, file_path: str, device: Optional[str] = None) -> 'Image':
+        return read_image(file_path, device)
 
-    @classmethod
-    def from_file(cls, file_path: str) -> 'Image':
-        #data: np.ndarray = __image_reader__(file_path)
-        #data_t: Tensor = K.utils.image_to_tensor(data)
-        data_t: Tensor = __image_reader__(file_path)
-        data_t = K.color.bgr_to_rgb(data_t)
-        # TODO: discuss whether we return normalised
-        data_t = data_t.float() / 255.
-        return cls(data_t, ImageColor.RGB)
-
+    # TODO: implement with another logic
     def _to_grayscale(self, data: Tensor) -> Tensor:
         if self.color == ImageColor.GRAY:
             out = data
         elif self.color == ImageColor.RGB:
-            out = K.color.rgb_to_grayscale(data)
+            out = rgb_to_grayscale(data)
         elif self.color == ImageColor.BGR:
-            out = K.color.bgr_to_grayscale(data)
+            out = bgr_to_grayscale(data)
         else:
             raise NotImplementedError(f"Unsupported color: {self.color}.")
         return out
@@ -109,18 +131,18 @@ class Image(Tensor):
     def _convert(self, color: ImageColor) -> Tuple[Tensor, ImageColor]:
         if color == ImageColor.RGB:
             if self.color == ImageColor.BGR:
-                data_out = K.color.bgr_to_rgb(self.data)
+                data_out = bgr_to_rgb(self.data)
                 color_out = ImageColor.RGB
         elif color == ImageColor.BGR:
             if self.color == ImageColor.RGB:
-                data_out = K.color.rgb_to_bgr(self.data)
+                data_out = rgb_to_bgr(self.data)
                 color_out = ImageColor.BGR
         elif color == ImageColor.GRAY:
             if self.color == ImageColor.BGR:
-                data_out = K.color.bgr_to_grayscale(self.data)
+                data_out = bgr_to_grayscale(self.data)
                 color_out = ImageColor.GRAY
             elif self.color == ImageColor.RGB:
-                data_out = K.color.rgb_to_grayscale(self.data)
+                data_out = rgb_to_grayscale(self.data)
                 color_out = ImageColor.GRAY
         else:
             raise NotImplementedError(f"Unsupported color: {self.color}.")
@@ -131,15 +153,15 @@ class Image(Tensor):
         return Image(data, color)
 
     def convert_(self, color: ImageColor) -> 'Image':
-        self.data, self.color = self._convert(color)
+        self.data, self._color = self._convert(color)
         return self
 
     def hflip(self) -> 'Image':
-        data = K.geometry.transform.hflip(self.data)
+        data = hflip(self.data)
         return Image(data, self.color)
 
     def vflip(self) -> 'Image':
-        data = K.geometry.transform.vflip(self.data)
+        data = vflip(self.data)
         return Image(data, self.color)
 
     # TODO: add the methods we need
@@ -149,12 +171,10 @@ class Image(Tensor):
 
 ## READING API
 
-# TODO: implement Image class here
-def read_image(file_path: str, device: Optional[torch.device] = None) -> Tensor:
-    # TODO: implement extension with pathlib
+def read_image(file_path: Union[str, Path], device: Optional[str] = None) -> Image:
     tensor: cvTensor
-    extension: str = file_path.split('.')[-1]
-    if extension == "jpg":
+    extension: str = Path(file_path).suffix
+    if extension == ".jpg":
         # use libjpeg-turbo for best performance
         tensor = kornia_rs.read_image_jpeg(file_path)
     else:
@@ -162,7 +182,9 @@ def read_image(file_path: str, device: Optional[torch.device] = None) -> Tensor:
         tensor = kornia_rs.read_image_rs(file_path)
     # cast to tensor and device, data comes in WxHxC
     # TODO: implement from dlpack
-    img_t = torch.as_tensor(tensor.data, device=device, dtype=torch.uint8)
+    device_ = Device.from_string(device)
+    data = torch.as_tensor(tensor.data, device=device_, dtype=torch.uint8)
+    img_t = Image.from_tensor(data, ImageColor.RGB)
     return img_t.reshape(tensor.shape).permute(2, 1, 0)  # CxHxW
 
 
