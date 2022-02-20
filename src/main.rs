@@ -1,8 +1,11 @@
-use kornia_rs::*;
-use std::path::PathBuf;
-use std::time::SystemTime;
+//use kornia_rs::*;
+//use std::path::PathBuf;
+//use std::time::SystemTime;
 
+#[allow(non_camel_case_types)]
+#[allow(dead_code)]
 mod dlpack;
+#[allow(dead_code)]
 mod tensor;
 
 fn main() {
@@ -15,6 +18,6 @@ fn main() {
     //    .duration_since(SystemTime::UNIX_EPOCH)
     //    .expect("get millis error");
     //let info = kornia_rs::read_image(str_path.clone());
-    let img_path = String::from("/home/edgar/Downloads/IMG_20211219_145924.jpg");
+    let _ = String::from("/home/edgar/Downloads/IMG_20211219_145924.jpg");
     //let out = kornia_rs::read_image_dlpack(img_path);
 }

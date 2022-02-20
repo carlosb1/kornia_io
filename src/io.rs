@@ -68,11 +68,11 @@ mod tests {
 
     #[test]
     fn load() {
-        let PATH: PathBuf = [env!("CARGO_MANIFEST_DIR"), "clients", "test.jpg"]
+        let path: PathBuf = [env!("CARGO_MANIFEST_DIR"), "clients", "test.jpg"]
             .iter()
             .collect();
 
-        let str_path = PATH.into_os_string().into_string().unwrap();
+        let str_path = path.into_os_string().into_string().unwrap();
         let start = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .expect("get millis error");
@@ -90,10 +90,10 @@ mod tests {
 
     #[bench]
     fn bench(b: &mut Bencher) {
-        let PATH: PathBuf = [env!("CARGO_MANIFEST_DIR"), "clients", "test.jpg"]
+        let path: PathBuf = [env!("CARGO_MANIFEST_DIR"), "clients", "test.jpg"]
             .iter()
             .collect();
-        let str_path = PATH.into_os_string().into_string().unwrap();
+        let str_path = path.into_os_string().into_string().unwrap();
         b.iter(|| {
             let info = read_image_rs(str_path.clone());
         });
