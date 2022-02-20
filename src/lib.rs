@@ -13,17 +13,43 @@ mod dlpack;
 mod tensor;
 use dlpack::{DLManagedTensor};
 
+#[pyclass(unsendable)]
+pub struct VizManager {
+    pub manager: vviz::manager::Manager,
+}
+
+#[pymethods]
+impl VizManager {
+    #[new]
+    pub fn new() -> Self {
+        VizManager {
+            manager: vviz::manager::Manager::new_remote()
+        }
+    }
+
+    // TODO: support later our tensor
+    pub fn add_image(&mut self, window_name: String, data: Vec<u8>, shape: Vec<usize>) {
+        let width = shape[0] as u32;
+        let height = shape[1] as u32;
+        let buf: RgbImage = image::ImageBuffer::from_raw(width, height, data).unwrap();
+        let img = image::DynamicImage::from(image::DynamicImage::ImageRgb8(buf));
+        self.manager.add_widget2(window_name, img.into_rgba8());
+    }
+
+    pub fn show(&mut self) {
+        loop {
+            self.manager.sync_with_gui();
+        }
+    }
+
+}
+
 #[pyfunction]
-pub fn read_image(file_path: String) -> (Vec<u8>, Vec<usize>) {
+pub fn read_image_rs(file_path: String) -> (Vec<u8>, Vec<usize>) {
     let img: image::DynamicImage = image::open(file_path).unwrap();
-    let new_shape: Vec<usize> = Vec::from([img.height() as usize, img.width() as usize, 3]);
-    // TODO: check the line below since it copies and we might want
-    // to just pass a pointer to the data.
-    let new_data: Vec<u8> = img.to_rgb8().to_vec();
-    // NOTE: are this two things the same ? We should benchmark.
-    //let buf_data: &[u8] = img.as_bytes();
-    //let new_data: Vec<u8> = (*buf_data).iter().cloned().collect();
-    (new_data, new_shape)
+    let shape = vec![img.width() as usize, img.height() as usize, 3];
+    let data = img.to_rgb8().to_vec();
+    (data, shape)
 }
 
 fn _read_image_jpeg_impl(file_path: String) -> Result<(Vec<u8>, Vec<usize>), Box<dyn std::error::Error>> {
@@ -51,7 +77,8 @@ fn _read_image_jpeg_impl(file_path: String) -> Result<(Vec<u8>, Vec<usize>), Box
     decompressor.decompress_to_slice(&jpeg_data, image)?;
 
     // return the raw pixel data and shape
-    Ok((pixels, vec![height, width, 3] ))
+    //Ok((pixels, vec![height, width, 3]))
+    Ok((pixels, vec![width, height, 3]))
 }
 
 #[pyfunction]
@@ -87,7 +114,7 @@ unsafe extern "C" fn destructor(o: *mut pyo3::ffi::PyObject) {
 #[pyfunction]
 pub fn read_image_dlpack(file_path: String) -> PyResult<*mut pyo3::ffi::PyObject> {
     // decode image
-    let (data, shape) = read_image(file_path);
+    let (data, shape) = read_image_jpeg(file_path);
     // create kornia tensor
     let mut img_t = tensor::cv::Tensor {
         shape: shape,
@@ -119,8 +146,8 @@ pub fn show_image_from_file(file_path: String) {
 #[pyfunction]
 pub fn show_image_from_raw(data: Vec<u8>, shape: Vec<usize>) {
     vviz::app::spawn(vviz::app::VVizMode::Local, move | mut manager: vviz::manager::Manager| {
-        let height = shape[0] as u32;
-        let width = shape[1] as u32;
+        let width = shape[0] as u32;
+        let height = shape[1] as u32;
         let buf: RgbImage = image::ImageBuffer::from_raw(width, height, data).unwrap();
         let img = image::DynamicImage::from(image::DynamicImage::ImageRgb8(buf));
         manager.add_widget2("img".to_string(), img.into_rgba8());
@@ -130,12 +157,13 @@ pub fn show_image_from_raw(data: Vec<u8>, shape: Vec<usize>) {
 
 #[pymodule]
 pub fn kornia_rs(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(read_image, m)?)?;
+    m.add_function(wrap_pyfunction!(read_image_rs, m)?)?;
     m.add_function(wrap_pyfunction!(read_image_jpeg, m)?)?;
     m.add_function(wrap_pyfunction!(read_image_dlpack, m)?)?;
     m.add_function(wrap_pyfunction!(show_image_from_file, m)?)?;
     m.add_function(wrap_pyfunction!(show_image_from_raw, m)?)?;
     m.add_class::<tensor::cv::Tensor>()?;
+    m.add_class::<VizManager>()?;
     Ok(())
 }
 
@@ -175,7 +203,7 @@ mod tests {
             .collect();
         let str_path = PATH.into_os_string().into_string().unwrap();
         b.iter(|| {
-            let info = read_image(str_path.clone());
+            let info = read_image_rs(str_path.clone());
         });
     }
 }

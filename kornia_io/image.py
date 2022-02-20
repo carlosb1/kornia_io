@@ -157,8 +157,8 @@ def read_image(file_path: str, device: Optional[torch.device] = None) -> Tensor:
         data, shape = kornia_rs.read_image_jpeg(file_path)
     else:
         # use image-rs for general image decoding
-        data, shape = kornia_rs.read_image(file_path)
-    # cast to tensor and device, data comes in HxWxC
+        data, shape = kornia_rs.read_image_rs(file_path)
+    # cast to tensor and device, data comes in WxHxC
     img_t = torch.as_tensor(data, device=device, dtype=torch.uint8)
     return img_t.reshape(shape).permute(2, 1, 0)  # CxHxW
 

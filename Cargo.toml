@@ -7,8 +7,8 @@ edition = "2021"
 
 [dependencies]
 image = "0.24.0"
-vviz = "0.3.0"
-turbojpeg = {version = "^0.2", features = ["image"], path = "../rust-turbojpeg"}
+vviz = {version = "0.3.0", path = "../vviz"}
+turbojpeg = {version = "^0.2", features = ["image"], git = "https://github.com/edgarriba/rust-turbojpeg", branch = "fix/colot_format"}
 pyo3 = { version = "0.15.1", features = ["extension-module"] }
 
 [dev-dependencies]
@@ -25,7 +25,3 @@ harness = false
 name = "kornia_rs"
 crate-type = ["cdylib", "lib"]
 path = "src/lib.rs"
-
-[[bin]]
-name = "kornia_app"
-path = "src/main.rs"

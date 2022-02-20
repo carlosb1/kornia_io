@@ -16,5 +16,5 @@ fn main() {
     //    .expect("get millis error");
     //let info = kornia_rs::read_image(str_path.clone());
     let img_path = String::from("/home/edgar/Downloads/IMG_20211219_145924.jpg");
-    let out = kornia_rs::read_image_dlpack(img_path);
+    //let out = kornia_rs::read_image_dlpack(img_path);
 }
