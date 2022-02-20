@@ -8,7 +8,7 @@ from kornia_rs import Tensor as cvTensor
 
 file_path = "/home/edgar/Downloads/IMG_20211219_145924.jpg"
 
-# load the image directly in the gpu
+# load the image with libjpeg-turbo and send directly to the gpu
 img = K_io.read_image(file_path, device=torch.device("cpu"))
 img_src = img.clone()  # for vis
 print(f"Image: {img.shape}, dtype: {img.dtype}, device: {img.device}")
@@ -20,25 +20,27 @@ img = K.contrib.distance_transform(img)
 # show using our cool rust-opengl (vviz lib :)
 
 # TODO: make this function more consistant, ans possibly inside Image
-def to_viz(_img: Tensor, denorm: bool):
+# TODO: implement Image.to_viz()
+def to_viz(_img: Tensor, denorm: bool) -> cvTensor:
     if denorm:
         _img = _img.mul_(255)
     _img = _img.squeeze_(0).byte()
     if _img.shape[0] == 1:
         _img = _img.repeat(3, 1, 1)
     # CxHxW => WxHxC
-    _img = _img.permute(2, 1, 0).contiguous().cpu()
-    return _img.reshape(-1).tolist(), _img.shape
+    _img = _img.permute(2, 1, 0).cpu()
+    # TODO: implement cvTensor.from_dlpack(_img.to_dlpack())
+    return cvTensor(_img.shape, _img.reshape(-1).tolist())
 
-img1_vis, shape1 = to_viz(img_src, denorm=False)
-img2_vis, shape2 = to_viz(img, denorm=True)
+image1 = to_viz(img_src, denorm=False)
+image2 = to_viz(img_src, denorm=True)
+print(image1.shape)
+print(image2.shape)
 
-#TODO: error -> OverflowError: out of range integral type conversion attempted
-# tensor = cvTensor(img1_vis, shape1)
-
-K_rs.show_image_from_raw(img1_vis, shape1)
+K_rs.show_image_from_raw(image1)
+#K_rs.show_image_from_raw(image1.data, image1.shape)
 
 #viz = K_rs.VizManager()
-#viz.add_image("original", img1_vis, shape1)
-#viz.add_image("distance", img2_vis, shape2)
+#viz.add_image("original", image1)
+#viz.add_image("distance", image2)
 #viz.show()

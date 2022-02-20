@@ -28,11 +28,15 @@ impl VizManager {
     }
 
     // TODO: support later our tensor
-    pub fn add_image(&mut self, window_name: String, data: Vec<u8>, shape: Vec<usize>) {
-        let width = shape[0] as u32;
-        let height = shape[1] as u32;
-        let buf: RgbImage = image::ImageBuffer::from_raw(width, height, data).unwrap();
-        let img = image::DynamicImage::from(image::DynamicImage::ImageRgb8(buf));
+    // TODO: tensor_to_image
+    //pub fn add_image(&mut self, window_name: String, data: Vec<u8>, shape: Vec<usize>) {
+    pub fn add_image(&mut self, window_name: String, image: tensor::cv::Tensor) {
+        let (data, shape) = (image.data, image.shape);
+        let (_w, _h, _ch) = (shape[0], shape[1], shape[2]);
+        let buf: RgbImage = image::ImageBuffer::from_raw(
+            _w as u32, _h as u32, data).unwrap();
+        let img = image::DynamicImage::from(
+            image::DynamicImage::ImageRgb8(buf));
         self.manager.add_widget2(window_name, img.into_rgba8());
     }
 
@@ -138,12 +142,14 @@ pub fn show_image_from_file(file_path: String) {
 }
 
 #[pyfunction]
-pub fn show_image_from_raw(data: Vec<u8>, shape: Vec<usize>) {
+pub fn show_image_from_raw(image: tensor::cv::Tensor) {
     vviz::app::spawn(vviz::app::VVizMode::Local, move | mut manager: vviz::manager::Manager| {
-        let width = shape[0] as u32;
-        let height = shape[1] as u32;
-        let buf: RgbImage = image::ImageBuffer::from_raw(width, height, data).unwrap();
-        let img = image::DynamicImage::from(image::DynamicImage::ImageRgb8(buf));
+        let (data, shape) = (image.data, image.shape);
+        let (_w, _h, _ch) = (shape[0], shape[1], shape[2]);
+        let buf: RgbImage = image::ImageBuffer::from_raw(
+            _w as u32, _h as u32, data).unwrap();
+        let img = image::DynamicImage::from(
+            image::DynamicImage::ImageRgb8(buf));
         manager.add_widget2("img".to_string(), img.into_rgba8());
         manager.sync_with_gui();
     });
