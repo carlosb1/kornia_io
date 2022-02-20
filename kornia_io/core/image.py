@@ -11,7 +11,6 @@ from kornia.utils import image_to_tensor, tensor_to_image
 
 import kornia_rs
 from kornia_rs import Tensor as cvTensor
-from kornia_io import io
 
 class ImageColor(Enum):
     GRAY = 0
@@ -92,6 +91,7 @@ class Image(Tensor):
 
     @classmethod
     def from_file(cls, file_path: Path, device: Optional[str] = None) -> 'Image':
+        from kornia_io import io
         return io.read_image(file_path, device)
 
     # TODO: implement with another logic

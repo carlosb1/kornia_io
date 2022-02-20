@@ -40,8 +40,9 @@ def read_image(file_path: Union[str, Path], device: Optional[str] = None) -> Ima
     return img_t.reshape(tensor.shape).permute(2, 1, 0)  # CxHxW
 
 
-def read_image_dlpack(file_path: str, device: Optional[torch.device] = None) -> Tensor:
+def read_image_dlpack(file_path: str, device: Optional[torch.device] = None) -> Image:
     # import pdb;pdb.set_trace()
     dl_tensor = kornia_rs.read_image_dlpack(file_path)
-    return torch.utils.dlpack.from_dlpack(dl_tensor)
+    return Image.from_tensor(
+        torch.utils.dlpack.from_dlpack(dl_tensor), ImageColor.RGB)
 
