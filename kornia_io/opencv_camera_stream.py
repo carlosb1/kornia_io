@@ -5,7 +5,7 @@ import torch
 import kornia as K
 
 from .camera_stream import CameraStreamBase
-from .image import Image, ImageColor
+from .core.image import Image, ImageColor
 
 
 class OpencvCameraStream(CameraStreamBase):

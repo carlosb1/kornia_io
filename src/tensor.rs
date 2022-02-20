@@ -1,8 +1,8 @@
 pub mod cv {
 
-    use crate::dlpack::*;
     use pyo3::prelude::*;
     use std::ffi::c_void;
+    use dlpack::{DLManagedTensor, DLTensor, DLDevice, DLDeviceType, DLDataType, DLDataTypeCode};
 
     unsafe extern "C" fn deleter(x: *mut DLManagedTensor) {
         println!("DLManagedTensor deleter");

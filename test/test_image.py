@@ -6,7 +6,7 @@ from kornia_io import Image, ImageColor
 from kornia.color.gray import rgb_to_grayscale
 
 import kornia_io
-from kornia_io.image import read_image
+from kornia_io.core.image import read_image
 
 
 class TestImage:

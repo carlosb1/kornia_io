@@ -1,32 +1,30 @@
+from dataclasses import dataclass
 from typing import Optional, Union
+from pathlib import Path
+from dataclasses import dataclass
 
-import visdom
-import numpy as np
-from torch import Tensor
+from kornia_io.core.image import Image
 
-from .image import Image
+import kornia_rs
+from kornia_rs import Tensor as cvTensor
 
 
-class Visualizer(visdom.Visdom):
-    def __init__(self, port: int = 8097) -> None:
-        super().__init__(port=port, raise_exceptions=True)
-        self._port = port
+@dataclass
+class VizOptions:
+    denormalize: bool = False
 
-        if not self.check_connection():
-            raise ConnectionError(
-                f"Error connecting with the visdom server. Run in your termnal: visdom.")
 
-    def show_image(self, window_name: str, image: Union[Image, Tensor, np.ndarray], opts: Optional[dict] = None) -> None:
-        opts_dict = dict(title=window_name)
-        if opts is not None:
-            opts_dict.update(opts)
+def show_image(window_name: str, data: Union[Image, Path, str], opts: Optional[VizOptions] = None):
+    if opts is None:
+        opts = VizOptions()
 
-        if isinstance(image, np.ndarray):
-            image = Image.from_numpy(image)
+    if isinstance(data, (Path, str,)):
+        file_path: Path = Path(data)
+        kornia_rs.show_image_from_file(file_path)
+    elif isinstance(data, Image):
+        image: Image = data
+        cv_img: cvTensor = image.to_viz(denormalize=opts.denormalize)
+        kornia_rs.show_image_from_tensor(window_name, cv_img)
 
-        if len(image.shape) == 4:
-            self.images(image, win=window_name, opts=opts_dict)
-        elif len(image.shape) in (2, 3,):
-            self.image(image, win=window_name, opts=opts_dict)
-        else:
-            raise NotImplementedError(f"Unsupported image size. Got: {image.shape}.")
+# TODO: implement VizManager wrapper
+# VizManager = kornia_rs.VizManager

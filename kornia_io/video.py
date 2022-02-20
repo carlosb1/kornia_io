@@ -4,7 +4,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from .image import Image, ImageColor
+from .core.image import Image, ImageColor
 
 
 class VideoStreamWriter:

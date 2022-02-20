@@ -6,7 +6,7 @@ import torch
 import numpy as np
 import kornia as K
 
-from .image import Image, ImageColor
+from .core.image import Image, ImageColor
 from .camera_stream import CameraStreamBase, CameraStreamBackend
 
 
