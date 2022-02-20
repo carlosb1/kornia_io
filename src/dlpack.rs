@@ -6,7 +6,7 @@
 use std::ffi::c_void;
 
 pub enum DLDeviceType {
-    kDLCPU=1,
+    kDLCPU = 1,
     kDLCUDA,
     kDLCUDAHost,
     kDLOpenCL,

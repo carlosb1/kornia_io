@@ -1,7 +1,8 @@
+use crate::dlpack::DLManagedTensor;
+use crate::io;
+use crate::tensor::cv;
 use pyo3::prelude::*;
 use std::ffi::{c_void, CStr, CString};
-use dlpack::{DLManagedTensor};
-
 
 // desctructor function for the python capsule
 unsafe extern "C" fn destructor(o: *mut pyo3::ffi::PyObject) {
@@ -18,8 +19,7 @@ unsafe extern "C" fn destructor(o: *mut pyo3::ffi::PyObject) {
         return;
     }
 
-    let ptr = pyo3::ffi::PyCapsule_GetPointer(
-        o, name.as_ptr()) as *mut DLManagedTensor;
+    let ptr = pyo3::ffi::PyCapsule_GetPointer(o, name.as_ptr()) as *mut DLManagedTensor;
     (*ptr).deleter.unwrap()(ptr);
 
     println!("Delete by Python");
