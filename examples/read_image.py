@@ -19,6 +19,8 @@ print(f"Image: {img.shape}, dtype: {img.dtype}, device: {img.device}")
 # do something with and show
 img = K.color.rgb_to_grayscale(img[None].float() / 255.)
 img = K.contrib.distance_transform(img)
+# TODO: something is not working here
+# img = img.apply(K.geometry.resize, (224, 224))
 assert isinstance(img, Image)  # type it's propagated :)
 
 # show using our cool rust-opengl (vviz lib :)

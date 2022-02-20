@@ -1,5 +1,6 @@
+from calendar import c
 from enum import Enum
-from typing import List, Optional, Tuple, Union
+from typing import Callable, List, Optional, Tuple, Union
 from pathlib import Path
 
 import torch
@@ -163,6 +164,9 @@ class Image(Tensor):
     def vflip(self) -> 'Image':
         data = vflip(self.data)
         return Image(data, self.color)
+
+    def apply(self, callable: Callable, *args, **kwargs) -> 'Image':
+        return Image(callable(self.data, *args, **kwargs), self.color)
 
     # TODO: add the methods we need
     # - lab, hsv, ...
