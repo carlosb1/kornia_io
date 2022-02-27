@@ -34,6 +34,7 @@ unsafe extern "C" fn deleter(x: *mut dlpack::DLManagedTensor) {
     x.drop_in_place();
 }
 
+// TODO: RuntimeError: Unsupported device_type
 fn cvtensor_to_dltensor(x: &Box<cv::Tensor>) -> dlpack::DLTensor {
     dlpack::DLTensor {
         data: x.data.as_ptr() as *mut c_void,

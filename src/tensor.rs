@@ -16,6 +16,19 @@ pub mod cv {
     //    x.drop_in_place();
     //}
 
+    fn get_strides_from_shape(shape: &[i64]) -> Vec<i64> {
+        let mut strides = vec![0i64; shape.len()];
+
+        let mut c = 1;
+        strides[shape.len() - 1] = c;
+        for i in (1..shape.len()).rev() {
+            c *= shape[i];
+            strides[i - 1] = c;
+        }
+
+        strides
+    }
+
     #[pyclass]
     #[derive(Debug, Clone, PartialEq)]
     pub struct Tensor {
@@ -31,11 +44,11 @@ pub mod cv {
     impl Tensor {
         #[new]
         pub fn new(shape: Vec<i64>, data: Vec<u8>) -> Self {
-            let num_strides = shape.len() as i64;
+            let strides = get_strides_from_shape(&shape);
             Tensor {
                 shape: shape,
                 data: data,
-                strides: vec![0, num_strides],
+                strides: strides,
             }
         }
     }
