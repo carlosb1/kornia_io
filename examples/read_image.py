@@ -21,12 +21,12 @@ img = img.apply(K.geometry.resize, (224, 224))
 assert isinstance(img, Image)  # type it's propagated :)
 
 # show using our cool rust-opengl (vviz lib :)
-opts = Kx.viz.VizOptions(denormalize=True)
-Kx.viz.show_image("original", img_src)
-Kx.viz.show_image("distance", img, opts)
+# opts = Kx.viz.VizOptions(denormalize=True)
+# Kx.viz.show_image("original", img_src)
+# Kx.viz.show_image("distance", img, opts)
 
-# TODO(edgar/hauke): coming soon
-# viz = Kx.viz.VizManager()
-# viz.add_image("original", image1)
-# viz.add_image("distance", image2)
-# viz.show()
+# show using Visdom
+viz = Kx.viz.VisdomManager()
+viz.add_image("original", img * 255.)
+viz.add_image("distance", img_src)
+viz.add_image("batch", img.repeat(4, 1, 1, 1) * 255.)
