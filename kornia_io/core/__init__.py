@@ -1,3 +1,4 @@
+import torch
+Tensor = torch.Tensor
 
-from torch import Tensor
 from .image import Image, ImageColor

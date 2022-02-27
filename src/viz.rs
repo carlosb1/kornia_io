@@ -55,7 +55,7 @@ pub fn show_image_from_tensor(window_name: String, image: cv::Tensor) {
         vviz::app::VVizMode::Local,
         move |mut manager: vviz::manager::Manager| {
             let (data, shape) = (image.data, image.shape);
-            let (_w, _h, _ch) = (shape[0], shape[1], shape[2]);
+            let (_h, _w, _ch) = (shape[0], shape[1], shape[2]);
             let buf: RgbImage = image::ImageBuffer::from_raw(_w as u32, _h as u32, data).unwrap();
             let img = image::DynamicImage::from(image::DynamicImage::ImageRgb8(buf));
             manager.add_widget2(window_name, img.into_rgba8());

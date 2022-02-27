@@ -22,7 +22,7 @@ fn _read_image_jpeg_impl(
     let (width, height) = (header.width, header.height);
 
     // prepare a storage for the raw pixel data
-    let mut pixels = vec![0; 3 * width * height];
+    let mut pixels = vec![0; height * width * 3];
     let image = Image {
         pixels: pixels.as_mut_slice(),
         width: width,
@@ -35,7 +35,7 @@ fn _read_image_jpeg_impl(
     decompressor.decompress_to_slice(&jpeg_data, image)?;
 
     // return the raw pixel data and shape
-    Ok((pixels, vec![width, height, 3]))
+    Ok((pixels, vec![height, width, 3]))
 }
 
 #[pyfunction]
