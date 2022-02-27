@@ -10,7 +10,7 @@ use crate::tensor::cv;
 // implementation function for libjpeg-turbo to load images
 fn _read_image_jpeg_impl(
     file_path: String,
-) -> Result<(Vec<u8>, Vec<usize>), Box<dyn std::error::Error>> {
+) -> Result<(Vec<u8>, Vec<i64>), Box<dyn std::error::Error>> {
     // get the JPEG data
     let jpeg_data = std::fs::read(file_path)?;
 
@@ -35,28 +35,22 @@ fn _read_image_jpeg_impl(
     decompressor.decompress_to_slice(&jpeg_data, image)?;
 
     // return the raw pixel data and shape
-    Ok((pixels, vec![height, width, 3]))
+    Ok((pixels, vec![height as i64, width as i64, 3]))
 }
 
 #[pyfunction]
 pub fn read_image_jpeg(file_path: String) -> cv::Tensor {
     // decode image and return tuple with data and shape
     let (data, shape) = _read_image_jpeg_impl(file_path).unwrap();
-    cv::Tensor {
-        data: data,
-        shape: shape,
-    }
+    cv::Tensor::new(shape, data)
 }
 
 #[pyfunction]
 pub fn read_image_rs(file_path: String) -> cv::Tensor {
     let img: image::DynamicImage = image::open(file_path).unwrap();
     let data = img.to_rgb8().to_vec();
-    let shape = vec![img.width() as usize, img.height() as usize, 3];
-    cv::Tensor {
-        data: data,
-        shape: shape,
-    }
+    let shape = vec![img.width() as i64, img.height() as i64, 3];
+    cv::Tensor::new(shape, data)
 }
 
 #[cfg(test)]

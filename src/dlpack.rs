@@ -47,8 +47,8 @@ pub struct DLTensor {
     pub device: DLDevice,
     pub ndim: u32,
     pub dtype: DLDataType,
-    pub shape: Vec<i64>,
-    pub strides: Vec<i64>,
+    pub shape: *mut i64,
+    pub strides: *mut i64,
     pub byte_offset: u64,
 }
 
