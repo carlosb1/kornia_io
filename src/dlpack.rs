@@ -7,19 +7,19 @@ use std::ffi::c_void;
 
 pub enum DLDeviceType {
     kDLCPU = 1,
-    kDLCUDA,
-    kDLCUDAHost,
-    kDLOpenCL,
-    kDLVulkan,
-    kDLMetal,
-    kDLVPI,
-    kDLROCM,
-    kDLROCMHost,
-    kDLExtDev,
-    kDLCUDAManaged,
-    kDLOneAPI,
-    kDLWebGPU,
-    kDLHexagon,
+    kDLCUDA = 2,
+    kDLCUDAHost = 3,
+    kDLOpenCL = 4,
+    kDLVulkan = 7,
+    kDLMetal = 8,
+    kDLVPI = 9,
+    kDLROCM = 10,
+    kDLROCMHost = 11,
+    kDLExtDev = 12,
+    kDLCUDAManaged = 13,
+    kDLOneAPI = 14,
+    kDLWebGPU = 15,
+    kDLHexagon = 16,
 }
 
 pub struct DLDevice {
@@ -28,12 +28,12 @@ pub struct DLDevice {
 }
 
 pub enum DLDataTypeCode {
-    kDLInt,
-    kDLUInt,
-    kDLFloat,
-    kDLOpaqueHandle,
-    kDLBfloat,
-    kDLComplex,
+    kDLInt = 0,
+    kDLUInt = 1,
+    kDLFloat = 2,
+    kDLOpaqueHandle = 3,
+    kDLBfloat = 4,
+    kDLComplex = 5,
 }
 
 pub struct DLDataType {
@@ -45,7 +45,7 @@ pub struct DLDataType {
 pub struct DLTensor {
     pub data: *mut c_void,
     pub device: DLDevice,
-    pub ndim: u32,
+    pub ndim: i32,
     pub dtype: DLDataType,
     pub shape: *mut i64,
     pub strides: *mut i64,

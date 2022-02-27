@@ -41,7 +41,7 @@ fn cvtensor_to_dltensor(x: &Box<cv::Tensor>) -> dlpack::DLTensor {
             device_type: dlpack::DLDeviceType::kDLCPU,
             device_id: 0,
         },
-        ndim: x.shape.len() as u32,
+        ndim: x.shape.len() as i32,
         dtype: dlpack::DLDataType {
             code: dlpack::DLDataTypeCode::kDLFloat as u8,
             bits: 32,
@@ -60,7 +60,7 @@ pub fn cvtensor_to_dlpack(x: cv::Tensor) -> PyResult<*mut pyo3::ffi::PyObject> {
 
     // create dlpack managed tensor
     let dlm_tensor = dlpack::DLManagedTensor {
-        dl_tensor,
+        dl_tensor: dl_tensor,
         manager_ctx: Box::into_raw(tensor_bx) as *mut c_void,
         deleter: Some(deleter),
     };
@@ -77,5 +77,6 @@ pub fn cvtensor_to_dlpack(x: cv::Tensor) -> PyResult<*mut pyo3::ffi::PyObject> {
             Some(destructor as pyo3::ffi::PyCapsule_Destructor),
         )
     };
+    std::mem::forget(name);
     Ok(ptr)
 }
