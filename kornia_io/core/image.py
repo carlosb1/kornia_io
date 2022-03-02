@@ -12,16 +12,21 @@ class ImageColor(Enum):
     RGB = 1
     BGR = 2
 
+class ImageLayout(Enum):
+    CHW = 0
+    HWC = 1
 
 class Image(Tensor):
     _color = ImageColor.RGB
+    _layout = ImageLayout.HWC
 
     @staticmethod
-    def __new__(cls, data, color, *args, **kwargs):
+    def __new__(cls, data, color, layout, *args, **kwargs):
         return Tensor._make_subclass(cls, data)
 
-    def __init__(self, data: Tensor, color: ImageColor) -> None:
+    def __init__(self, data: Tensor, color: ImageColor, layout: ImageLayout) -> None:
         self._color = color
+        self._layout = layout
 
     @property
     def valid(self) -> bool:
@@ -51,9 +56,9 @@ class Image(Tensor):
     def color(self) -> ImageColor:
         return self._color
 
-    @classmethod
-    def from_tensor(cls, data: Tensor, color: ImageColor) -> 'Image':
-        return cls(data, color)
+    @property
+    def layout(self) -> ImageLayout:
+        return self._layout
 
     @classmethod
     def from_numpy(cls, data, color: ImageColor = ImageColor.RGB) -> 'Image':
@@ -76,6 +81,16 @@ class Image(Tensor):
         # TODO: implement cvTensor.from_dlpack(_img.to_dlpack())
         return cvTensor(img.shape, img.reshape(-1).tolist())
 
+    def to_chw(self) -> 'Image':
+        if self.layout is ImageLayout.CHW:
+            return self
+        return self.permute(2, 0, 1)
+
+    def to_hwc(self) -> 'Image':
+        if self.layout is ImageLayout.HWC:
+            return self
+        return self.permute(1, 2, 0)
+
     # TODO: possibly call torch.as_tensor
     @classmethod
     def from_list(cls, data: List[List[Union[float, int]]], color: ImageColor) -> 'Image':
@@ -90,7 +105,7 @@ class Image(Tensor):
         self.data = handle(self.data, *args, **kwargs)
 
     def apply(self, handle: Callable, *args, **kwargs) -> 'Image':
-        return Image(handle(self.data, *args, **kwargs), self.color)
+        return Image(handle(self.data, *args, **kwargs), self.color, self.layout)
 
     # TODO: add the methods we need
     # - grayscale, ..

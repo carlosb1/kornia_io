@@ -39,13 +39,13 @@ fn cvtensor_to_dltensor(x: &Box<cv::Tensor>) -> dlpack::DLTensor {
     dlpack::DLTensor {
         data: x.data.as_ptr() as *mut c_void,
         device: dlpack::DLDevice {
-            device_type: dlpack::DLDeviceType::kDLCPU,
+            device_type: dlpack::DLDeviceType_kDLCPU,
             device_id: 0,
         },
         ndim: x.shape.len() as i32,
         dtype: dlpack::DLDataType {
-            code: dlpack::DLDataTypeCode::kDLFloat as u8,
-            bits: 32,
+            code: dlpack::DLDataTypeCode_kDLUInt as u8,
+            bits: 8,
             lanes: 1,
         },
         shape: x.shape.as_ptr() as *mut i64,

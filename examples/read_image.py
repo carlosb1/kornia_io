@@ -22,7 +22,7 @@ assert isinstance(img, Image)  # type it's propagated :)
 
 # show using our cool rust-opengl (vviz lib :)
 # opts = Kx.viz.VizOptions(denormalize=True)
-# Kx.viz.show_image("original", img_src)
+Kx.viz.show_image("original", img_src)
 # Kx.viz.show_image("distance", img, opts)
 
 # show using Visdom
